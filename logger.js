@@ -1,16 +1,14 @@
-const Queue = require('bull');
-const sendReportJob = require('../jobs/report.job');
+const { createLogger, transports, format } = require('winston');
 
-
-const reportQueue = new Queue('reportQueue');
-reportQueue.process(async (job) => {
-  const user = job.data;
-  if (!user || !user.email) {
-    console.log('Invalid user data in report job');
-    return;
-  }
-
-  await sendReportJob(user); 
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp(),
+    format.printf(({ timestamp, level, message }) => {
+      return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+    })
+  ),
+  transports: [new transports.Console()],
 });
 
-module.exports = reportQueue;
+module.exports = logger;
